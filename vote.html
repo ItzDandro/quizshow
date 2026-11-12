@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#08071a">
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Abstimmung – Quiz Show</title>
+<style>
+:root{--base:#08071a;--bg1:#3b1d8f;--bg2:#0f5c8a;--acc:#8b6cff;--acc2:#ff6bcb;--gold:#ffd43b;--txt:#fff;--ok:#2fbf71;--bad:#ef4b55;--mut:#ffffffa0}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%}
+body{font:16px/1.4 'Segoe UI',system-ui,-apple-system,Roboto,sans-serif;color:var(--txt);background:var(--base);min-height:100dvh;display:flex;flex-direction:column;overflow-x:hidden}
+#bg{position:fixed;inset:-15%;z-index:-1;background:radial-gradient(ellipse 70% 50% at 10% 0%,var(--bg1),transparent 70%),radial-gradient(ellipse 70% 50% at 95% 100%,var(--bg2),transparent 70%);animation:drift 16s ease-in-out infinite alternate}
+#bg::after{content:'';position:absolute;inset:0;background-image:radial-gradient(#ffffff16 1px,transparent 1.3px);background-size:22px 22px;mask-image:radial-gradient(ellipse at center,#000 30%,transparent 80%);-webkit-mask-image:radial-gradient(ellipse at center,#000 30%,transparent 80%)}
+@keyframes drift{to{transform:scale(1.08) translate(2%,1.5%) rotate(1deg)}}
+header{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:max(14px,env(safe-area-inset-top)) 16px 10px}
+.brand{font-weight:800;font-size:12px;letter-spacing:.16em;text-transform:uppercase;background:#ffffff12;border:1px solid #ffffff24;padding:6px 12px;border-radius:30px;backdrop-filter:blur(8px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.me{display:flex;align-items:center;gap:8px;font-weight:800;font-size:14px;background:var(--c,#ffffff22);color:#111;padding:3px 12px 3px 3px;border-radius:30px;max-width:55%;flex:none}
+.me span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.me:empty{display:none}
+.av{--s:40px;width:var(--s);height:var(--s);border-radius:50%;background:var(--c,#888);color:#111;display:grid;place-items:center;font-weight:900;font-size:calc(var(--s)*.4);flex:none;box-shadow:inset 0 -3px 0 #0003}
+.me .av{--s:30px;box-shadow:0 0 0 2px #fff}
+main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 16px 20px;width:100%;max-width:560px;margin:0 auto}
+.center{text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px;animation:pop .4s cubic-bezier(.3,1.4,.5,1)}
+.icon{font-size:64px;line-height:1;margin-bottom:8px;filter:drop-shadow(0 6px 14px #0007)}
+.icon.float{animation:float 3s ease-in-out infinite}
+h1{margin:0;font-size:28px;line-height:1.15;font-weight:900;background:linear-gradient(90deg,var(--gold),var(--acc2) 50%,var(--acc));-webkit-background-clip:text;background-clip:text;color:transparent}
+.kicker{font-size:12px;letter-spacing:.24em;text-transform:uppercase;font-weight:800;opacity:.75}
+.sub{color:var(--mut);font-size:15px;max-width:400px}
+.dots span{display:inline-block;width:9px;height:9px;margin:14px 4px 0;border-radius:50%;background:var(--acc);animation:dot 1.2s infinite}
+.dots span:nth-child(2){animation-delay:.15s}.dots span:nth-child(3){animation-delay:.3s}
+@keyframes dot{0%,80%,100%{transform:scale(.6);opacity:.4}40%{transform:none;opacity:1}}
+@keyframes float{50%{transform:translateY(-8px) rotate(-3deg)}}
+@keyframes pop{from{transform:scale(.92);opacity:0}to{transform:none;opacity:1}}
+.vote{width:100%;animation:pop .4s cubic-bezier(.3,1.4,.5,1)}
+.vote .head{text-align:center;margin-bottom:16px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.opt{--c:#fff;position:relative;display:flex;flex-direction:column;align-items:center;gap:8px;padding:18px 10px 16px;border-radius:20px;border:2px solid #ffffff24;border-bottom:5px solid var(--c);background:linear-gradient(160deg,#ffffff1c,#ffffff07);color:var(--txt);font:800 17px inherit;font-family:inherit;cursor:pointer;backdrop-filter:blur(8px);transition:transform .15s,box-shadow .2s,background .2s,border-color .2s;min-width:0}
+.opt .av{--s:58px}
+.opt .nm{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.opt:active{transform:scale(.96)}
+.opt.sel{border-color:var(--c);background:linear-gradient(160deg,color-mix(in srgb,var(--c) 45%,transparent),#ffffff0a);box-shadow:0 0 26px -4px var(--c);transform:scale(1.03)}
+.opt.sel::after{content:'✓';position:absolute;top:-10px;right:-8px;width:32px;height:32px;border-radius:50%;background:var(--ok);color:#fff;display:grid;place-items:center;font-size:18px;box-shadow:0 4px 10px #0007}
+.opt.pend{opacity:.6}
+.opt:disabled{cursor:default}
+.grid.locked .opt:not(.sel){opacity:.35}
+.grid.one{grid-template-columns:1fr}
+.info{margin-top:16px;padding:12px 14px;border-radius:14px;background:#ffffff10;border:1px solid #ffffff20;text-align:center;font-size:14.5px}
+.info b{color:var(--gold)}
+.prog{margin-top:14px;display:flex;flex-direction:column;align-items:center;gap:7px;font-weight:700;font-size:14px;color:var(--mut)}
+.bar{width:100%;max-width:300px;height:8px;border-radius:8px;background:#ffffff1c;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:8px;background:linear-gradient(90deg,var(--acc),var(--acc2));transition:width .4s}
+.bar.ok i{background:linear-gradient(90deg,#2fbf71,#8ff0b8)}
+.loser .av{--s:110px;box-shadow:0 0 40px var(--c);margin:6px 0 4px}
+.loser .big{font-size:34px;font-weight:900;color:var(--c);text-shadow:0 0 22px var(--c);line-height:1.05;word-break:break-word}
+.btn{margin-top:16px;padding:13px 22px;border-radius:14px;border:none;background:var(--acc);color:#fff;font:800 16px inherit;font-family:inherit;cursor:pointer}
+footer{display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 16px max(12px,env(safe-area-inset-bottom));font-size:12.5px;color:var(--mut)}
+.cdot{width:9px;height:9px;border-radius:50%;background:#7c8199;box-shadow:0 0 0 3px #7c819930;flex:none}
+.cdot.ok{background:var(--ok);box-shadow:0 0 0 3px #2fbf7135}
+.cdot.wait{background:#f5a524;box-shadow:0 0 0 3px #f5a52435;animation:blink 1s infinite}
+.cdot.bad{background:var(--bad);box-shadow:0 0 0 3px #ef4b5535}
+@keyframes blink{50%{opacity:.35}}
+#toast{position:fixed;left:50%;bottom:max(56px,calc(env(safe-area-inset-bottom) + 50px));transform:translateX(-50%) translateY(10px);background:#000d;border:1px solid #ffffff30;padding:11px 18px;border-radius:14px;opacity:0;transition:all .25s;pointer-events:none;font-weight:700;font-size:14.5px;max-width:90vw;text-align:center;z-index:9}
+#toast.show{opacity:1;transform:translateX(-50%)}
+@media (min-width:520px){.grid:not(.one){grid-template-columns:repeat(3,1fr)}h1{font-size:32px}}
+@media (prefers-reduced-motion:reduce){#bg,.icon.float{animation:none}}
+</style>
+</head>
+<body>
+<div id="bg"></div>
+<header><div class="brand" id="show">Quiz Show · Abstimmung</div><div class="me" id="me"></div></header>
+<main id="main"></main>
+<footer><span class="cdot" id="cdot"></span><span id="ctext">Starte …</span></footer>
+<div id="toast"></div>
+<script>
+/* Spieler-Abstimmung für die Quiz Show.
+   Link-Aufbau: vote.html#r=RAUMCODE&p=SPIELER-ID&k=SCHLÜSSEL  (erzeugt die Regie für jeden Spieler einzeln)
+   Verbindung: WebRTC über PeerJS – die Regie ist der Host mit der ID „quizshow-vote-<raumcode>“. */
+const PEER_LIBS = ['https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js', 'https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js'];
+const PREFIX = 'quizshow-vote-';
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const initials = n => { const w = String(n || '?').trim().split(/\s+/); return ((w[0] || '?')[0] + (w[1] ? w[1][0] : (w[0] || '').slice(1, 2))).toUpperCase(); };
+const col = c => /^#[0-9a-f]{3,8}$/i.test(String(c || '')) ? c : '#888';
+const avatar = (p, s) => `<div class="av" style="--c:${col(p.color)}${s ? ';--s:' + s : ''}">${esc(initials(p.name))}</div>`;
+
+const Q = new URLSearchParams(location.hash.slice(1));
+const ROOM = (Q.get('r') || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+const PID = (Q.get('p') || '').replace(/[^a-z0-9]/gi, '');
+const KEY = Q.get('k') || '';
+const C = {peer:null, conn:null, connected:false, stop:false, timer:null, st:null, last:'', pending:null, view:''};
+
+function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('show'), 2600); }
+function setConn(kind, text) { $('#cdot').className = 'cdot ' + kind; $('#ctext').textContent = text; }
+function screen(kind, a, b) {
+  C.view = kind;
+  const m = $('#main');
+  if (kind === 'connect') m.innerHTML = `<div class="center"><div class="icon float">📡</div><h1>Verbinde mit der Show …</h1><div class="dots"><span></span><span></span><span></span></div></div>`;
+  else if (kind === 'host') m.innerHTML = `<div class="center"><div class="icon float">🎬</div><h1>Die Show ist noch nicht online</h1><p class="sub">Sobald der Spielleiter die Abstimmung startet, verbindet sich diese Seite automatisch. Lass sie einfach offen.</p><div class="dots"><span></span><span></span><span></span></div></div>`;
+  else if (kind === 'kicked') m.innerHTML = `<div class="center"><div class="icon">📱</div><h1>Auf einem anderen Gerät geöffnet</h1><p class="sub">Dein Link wurde gerade woanders geöffnet. Pro Spieler kann nur ein Gerät verbunden sein.</p><button class="btn" id="again">Hier wieder verbinden</button></div>`;
+  else m.innerHTML = `<div class="center"><div class="icon">⚠️</div><h1>${esc(a)}</h1><p class="sub">${esc(b)}</p></div>`;
+}
+
+/* ---------- PeerJS laden & verbinden ---------- */
+function loadLib() {
+  if (window.Peer) return Promise.resolve();
+  return new Promise((res, rej) => {
+    const tryN = i => {
+      if (i >= PEER_LIBS.length) { rej(new Error('PeerJS')); return; }
+      const s = document.createElement('script'); s.src = PEER_LIBS[i];
+      s.onload = () => window.Peer ? res() : tryN(i + 1);
+      s.onerror = () => { s.remove(); tryN(i + 1); };
+      document.head.appendChild(s);
+    };
+    tryN(0);
+  });
+}
+function retry(ms) { clearTimeout(C.timer); if (!C.stop) C.timer = setTimeout(connect, ms); }
+function killPeer() { const p = C.peer; C.peer = null; dropConn(); try { if (p) p.destroy(); } catch (e) {} }
+function dropConn() { const c = C.conn; C.conn = null; C.connected = false; try { if (c) c.close(); } catch (e) {} }
+function makePeer() {
+  const peer = new Peer({debug:0}); C.peer = peer;
+  peer.on('open', () => { if (C.peer === peer) connect(); });
+  peer.on('disconnected', () => { if (C.peer === peer && !peer.destroyed) setTimeout(() => { try { if (peer.disconnected && !peer.destroyed) peer.reconnect(); } catch (e) {} }, 1500); });
+  peer.on('error', e => {
+    if (C.peer !== peer) return;
+    if (e && e.type === 'peer-unavailable') {
+      dropConn(); setConn('wait', 'Spielleiter nicht online – neuer Versuch …');
+      if (!C.st) screen('host'); retry(4000); return;
+    }
+    if (peer.open && !peer.disconnected) return;
+    setConn('bad', 'Verbindungsproblem – neuer Versuch …'); killPeer(); retry(5000);
+  });
+}
+async function connect() {
+  clearTimeout(C.timer);
+  if (C.stop) return;
+  if (!window.Peer) { try { await loadLib(); } catch (e) { setConn('bad', 'Keine Internetverbindung? Neuer Versuch …'); retry(5000); return; } }
+  if (!C.peer || C.peer.destroyed) { makePeer(); return; }          // „open“ ruft connect() erneut
+  if (!C.peer.open) { if (C.peer.disconnected) try { C.peer.reconnect(); } catch (e) {} retry(3000); return; }
+  dropConn();
+  setConn('wait', 'Verbinde …');
+  const c = C.peer.connect(PREFIX + ROOM.toLowerCase(), {serialization:'json', reliable:true});
+  C.conn = c;
+  const to = setTimeout(() => { if (C.conn === c && !C.connected) { dropConn(); retry(500); } }, 12000);
+  c.on('open', () => { if (C.conn !== c) return; c.send({t:'hello', p:PID, k:KEY}); });
+  c.on('data', m => { if (C.conn === c) { clearTimeout(to); onMsg(m); } });
+  const lost = () => {
+    if (C.conn !== c) return;
+    clearTimeout(to); C.conn = null; C.connected = false;
+    if (C.stop) return;
+    if (Date.now() - (C.bye || 0) < 5000) { setConn('wait', 'Spielleiter ist offline – warte …'); retry(4000); return; }
+    setConn('bad', 'Verbindung verloren – verbinde neu …'); retry(2000);
+  };
+  c.on('close', lost); c.on('error', lost);
+}
+function stopAll() { C.stop = true; clearTimeout(C.timer); dropConn(); }
+
+/* ---------- Nachrichten von der Regie ---------- */
+function onMsg(m) {
+  if (!m || typeof m !== 'object') return;
+  if (m.t === 'state') { C.connected = true; setConn('ok', 'Verbunden mit der Show'); render(m); }
+  else if (m.t === 'err') { C.pending = null; toast('⚠ ' + m.msg); if (C.st) render(C.st, true); }
+  else if (m.t === 'deny') { stopAll(); C.st = null; $('#me').innerHTML = ''; screen('bad', 'Kein Zugang', m.msg || 'Dieser Link ist ungültig.'); setConn('bad', 'Getrennt'); }
+  else if (m.t === 'kicked') { stopAll(); screen('kicked'); setConn('bad', 'Auf anderem Gerät geöffnet'); }
+  else if (m.t === 'bye') { C.bye = Date.now(); setConn('wait', 'Der Spielleiter hat die Abstimmung beendet'); }
+}
+function theme(c) {
+  if (!c) return;
+  const s = document.documentElement.style;
+  [['--base', c.base], ['--bg1', c.bg1], ['--bg2', c.bg2], ['--acc', c.acc], ['--acc2', c.acc2], ['--gold', c.gold], ['--txt', c.text]].forEach(([k, v]) => { if (/^#[0-9a-f]{3,8}$/i.test(String(v || ''))) s.setProperty(k, v); });
+  if (c.base) document.querySelector('meta[name=theme-color]').content = col(c.base);
+}
+function render(st, force) {
+  const prev = C.st, js = JSON.stringify(st) + '|' + C.pending;
+  C.st = st;
+  if (C.pending && (st.my === C.pending || st.phase !== 'open')) { if (st.my === C.pending) toast('✓ Stimme gespeichert'); C.pending = null; }
+  if (!force && js === C.last && C.view === 'state') return;
+  C.last = JSON.stringify(st) + '|' + C.pending; C.view = 'state';
+  theme(st.c);
+  document.title = (st.phase === 'open' ? '🗳 ' : '') + 'Abstimmung – ' + st.show;
+  $('#show').textContent = st.show + (st.round ? ' · Runde ' + st.round : '');
+  $('#me').style.setProperty('--c', col(st.me.color));
+  $('#me').innerHTML = `${avatar(st.me)}<span>${esc(st.me.name)}</span>`;
+  if (st.phase === 'open' && (!prev || prev.phase !== 'open') && !st.out) { try { if (navigator.vibrate && (!navigator.userActivation || navigator.userActivation.hasBeenActive)) navigator.vibrate([120, 60, 120]); } catch (e) {} }
+  const m = $('#main');
+  const prog = (st.total ? `<div class="prog"><div class="bar ${st.phase === 'closed' ? 'ok' : ''}"><i style="width:${Math.round(100 * st.done / st.total)}%"></i></div>${st.done} von ${st.total} haben abgestimmt</div>` : '');
+  const myName = () => { const o = (st.opts || []).find(x => x.id === st.my); return o ? o.name : ''; };
+
+  if (st.out && st.phase !== 'result') {
+    m.innerHTML = `<div class="center"><div class="icon">💀</div><h1>Du bist ausgeschieden</h1><p class="sub">Du kannst nicht mehr abstimmen – schau einfach weiter zu. Danke fürs Mitspielen!</p></div>`;
+  } else if (st.phase === 'open' || st.phase === 'closed') {
+    const closed = st.phase === 'closed', opts = st.opts || [];
+    let h = `<div class="vote"><div class="head"><div class="kicker">${closed ? '🔒 Abstimmung geschlossen' : 'Runde ' + (st.round || 1) + ' · Abstimmung'}</div><h1 style="margin-top:6px">${esc(st.title)}</h1></div>`;
+    h += `<div class="grid ${opts.length === 1 ? 'one' : ''} ${closed ? 'locked' : ''}">` + opts.map(o => {
+      const sel = (C.pending || st.my) === o.id;
+      return `<button class="opt ${sel ? 'sel' : ''} ${C.pending === o.id ? 'pend' : ''}" data-v="${esc(o.id)}" style="--c:${col(o.color)}" ${closed ? 'disabled' : ''}>${avatar(o, '58px')}<span class="nm">${esc(o.name)}</span></button>`;
+    }).join('') + '</div>';
+    if (closed) h += `<div class="info">${st.my ? `Deine Stimme: <b>${esc(myName())}</b>` : 'Du hast nicht abgestimmt.'}<br><span style="opacity:.75">Jetzt wird im Stream aufgelöst …</span></div>`;
+    else if (st.my) h += `<div class="info">Deine Stimme: <b>${esc(myName())}</b>${st.mySrc === 'manual' ? ' (vom Spielleiter eingetragen)' : ''}<br><span style="opacity:.75">Du kannst sie noch ändern, bis der Spielleiter die Abstimmung schließt.</span></div>`;
+    else h += `<div class="info">Tippe auf den Spieler, der deiner Meinung nach der Dümmste war.<br><span style="opacity:.75">Für dich selbst kannst du nicht stimmen.</span></div>`;
+    m.innerHTML = h + prog + '</div>';
+  } else if (st.phase === 'result' && st.loser) {
+    const l = st.loser;
+    m.innerHTML = `<div class="center loser" style="--c:${col(l.color)}"><div class="kicker">Runde ${st.round} · Ergebnis</div>${avatar(l)}<div class="big">${l.me ? 'Du' : esc(l.name)}</div><p class="sub" style="font-size:19px;font-weight:800;color:var(--txt)">${l.out ? (l.me ? 'fliegst raus! 💀' : 'fliegt raus! 💀') : (l.me ? 'verlierst ein Leben 💔' : 'verliert ein Leben 💔')}</p><p class="sub">Warte auf die nächste Runde …</p></div>`;
+  } else {
+    m.innerHTML = `<div class="center"><div class="icon float">⏳</div><h1>Warte auf Abstimmung …</h1><p class="sub">Sobald der Spielleiter die Abstimmung freigibt, kannst du hier wählen. Lass diese Seite einfach offen.</p><div class="dots"><span></span><span></span><span></span></div></div>`;
+  }
+}
+
+/* ---------- Eingaben ---------- */
+$('#main').addEventListener('click', e => {
+  if (e.target.closest('#again')) { C.stop = false; screen('connect'); connect(); return; }
+  const b = e.target.closest('[data-v]'); if (!b || b.disabled) return;
+  const st = C.st; if (!st || st.phase !== 'open' || st.out) return;
+  const v = b.dataset.v;
+  if (st.my === v && !C.pending) return;
+  if (!C.conn || !C.connected) { toast('⚠ Gerade keine Verbindung – kurz warten …'); return; }
+  C.pending = v;
+  try { C.conn.send({t:'vote', v}); } catch (err) { C.pending = null; toast('⚠ Stimme konnte nicht gesendet werden'); }
+  render(st, true);
+  setTimeout(() => { if (C.pending === v) { C.pending = null; toast('⚠ Keine Antwort – bitte nochmal tippen'); if (C.st) render(C.st, true); } }, 8000);
+});
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && !C.connected && !C.stop) { retry(0); } });
+window.addEventListener('online', () => { if (!C.connected && !C.stop) retry(0); });
+window.addEventListener('hashchange', () => location.reload());
+window.addEventListener('pagehide', () => { try { if (C.peer) C.peer.destroy(); } catch (e) {} });
+
+/* ---------- Start ---------- */
+if (!ROOM || !PID || !KEY) { screen('bad', 'Ungültiger Link', 'Dieser Link ist unvollständig. Frag den Spielleiter nach deinem persönlichen Abstimmungs-Link.'); setConn('bad', 'Kein gültiger Link'); }
+else { screen('connect'); setConn('wait', 'Lade …'); connect(); }
+</script>
+</body>
+</html>
