@@ -55,6 +55,29 @@ h1{margin:0;font-size:28px;line-height:1.15;font-weight:900;background:linear-gr
 .bar.ok i{background:linear-gradient(90deg,#2fbf71,#8ff0b8)}
 .loser .av{--s:110px;box-shadow:0 0 40px var(--c);margin:6px 0 4px}
 .loser .big{font-size:34px;font-weight:900;color:var(--c);text-shadow:0 0 22px var(--c);line-height:1.05;word-break:break-word}
+.st{font-size:12.5px;font-weight:700;opacity:.85}
+details.recap{margin-top:16px;border-radius:14px;background:#ffffff0c;border:1px solid #ffffff1c;overflow:hidden}
+details.recap summary{padding:12px 14px;font-weight:800;cursor:pointer;list-style:none}
+details.recap summary::after{content:'▾';float:right;opacity:.6}
+details.recap[open] summary::after{content:'▴'}
+.rg{padding:8px 14px 12px;border-top:1px solid #ffffff14}
+.rg .rh{display:flex;align-items:center;gap:8px;font-weight:800;margin-bottom:4px}
+.rg .rh .av{--s:24px}
+.rl{display:grid;grid-template-columns:20px 1fr;gap:6px;font-size:13.5px;padding:3px 0}
+.rl b{text-align:center}.rl b.right{color:var(--ok)}.rl b.wrong{color:var(--bad)}.rl b.skip{opacity:.6}
+.rl small{display:block;opacity:.65}
+.turn{display:inline-flex;align-items:center;gap:9px;padding:5px 16px 5px 5px;border-radius:40px;background:var(--c);color:#111;font-weight:900;font-size:18px;margin-top:8px}
+.turn .av{--s:34px;box-shadow:0 0 0 2px #fff}
+.jbtn{margin-top:22px;padding:16px 26px;border-radius:18px;border:none;font:900 19px inherit;font-family:inherit;color:#111;background:linear-gradient(90deg,#f5a524,#ff6bcb);box-shadow:0 8px 30px -8px #ff6bcb;cursor:pointer}
+.jbtn:active{transform:scale(.97)}
+.jstat{margin-top:14px;font-size:13.5px;color:var(--mut);font-weight:700}
+.btn.ghost{background:#ffffff14;border:1px solid #ffffff30}
+.pcard{margin-top:22px;display:flex;align-items:center;gap:12px;padding:10px 14px 10px 10px;border-radius:16px;background:#ffffff10;border:1px solid #ffffff22;text-align:left}
+.pcard .av{--s:52px}
+.pcard b{display:block;font-size:14.5px}.pcard small{color:var(--mut);font-size:12.5px}
+.pbtn{padding:8px 12px;border-radius:10px;border:1px solid #ffffff30;background:#ffffff14;color:var(--txt);font:700 13px inherit;font-family:inherit;cursor:pointer;white-space:nowrap}
+.me{cursor:pointer}
+.ver{opacity:.35;margin-left:6px}
 .btn{margin-top:16px;padding:13px 22px;border-radius:14px;border:none;background:var(--acc);color:#fff;font:800 16px inherit;font-family:inherit;cursor:pointer}
 footer{display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 16px max(12px,env(safe-area-inset-bottom));font-size:12.5px;color:var(--mut)}
 .cdot{width:9px;height:9px;border-radius:50%;background:#7c8199;box-shadow:0 0 0 3px #7c819930;flex:none}
@@ -72,7 +95,8 @@ footer{display:flex;align-items:center;justify-content:center;gap:8px;padding:10
 <div id="bg"></div>
 <header><div class="brand" id="show">Quiz Show · Abstimmung</div><div class="me" id="me"></div></header>
 <main id="main"></main>
-<footer><span class="cdot" id="cdot"></span><span id="ctext">Starte …</span></footer>
+<footer><span class="cdot" id="cdot"></span><span id="ctext">Starte …</span><span class="ver">v4</span></footer>
+<input type="file" id="imgIn" accept="image/*" hidden>
 <div id="toast"></div>
 <script>
 /* Spieler-Abstimmung für die Quiz Show.
@@ -84,13 +108,15 @@ const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const initials = n => { const w = String(n || '?').trim().split(/\s+/); return ((w[0] || '?')[0] + (w[1] ? w[1][0] : (w[0] || '').slice(1, 2))).toUpperCase(); };
 const col = c => /^#[0-9a-f]{3,8}$/i.test(String(c || '')) ? c : '#888';
-const avatar = (p, s) => `<div class="av" style="--c:${col(p.color)}${s ? ';--s:' + s : ''}">${esc(initials(p.name))}</div>`;
+const IMG_RE = /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/;
+const pimg = p => p && p.id && C.imgs[p.id] && IMG_RE.test(C.imgs[p.id]) ? C.imgs[p.id] : '';
+const avatar = (p, s) => { const im = pimg(p); return `<div class="av" style="--c:${col(p.color)}${s ? ';--s:' + s : ''}${im ? `;background-image:url('${im}');background-size:cover;background-position:center` : ''}">${im ? '' : esc(initials(p.name))}</div>`; };
 
 const Q = new URLSearchParams(location.hash.slice(1));
 const ROOM = (Q.get('r') || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
 const PID = (Q.get('p') || '').replace(/[^a-z0-9]/gi, '');
 const KEY = Q.get('k') || '';
-const C = {peer:null, conn:null, connected:false, stop:false, timer:null, st:null, last:'', pending:null, view:''};
+const C = {imgs:{}, peer:null, conn:null, connected:false, stop:false, timer:null, st:null, last:'', pending:null, view:''};
 
 function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('show'), 2600); }
 function setConn(kind, text) { $('#cdot').className = 'cdot ' + kind; $('#ctext').textContent = text; }
@@ -162,11 +188,37 @@ function stopAll() { C.stop = true; clearTimeout(C.timer); dropConn(); }
 function onMsg(m) {
   if (!m || typeof m !== 'object') return;
   if (m.t === 'state') { C.connected = true; setConn('ok', 'Verbunden mit der Show'); render(m); }
+  else if (m.t === 'pimg') { if (m.d) C.imgs[m.id] = m.d; else delete C.imgs[m.id]; if (C.st) render(C.st, true); }
   else if (m.t === 'err') { C.pending = null; toast('⚠ ' + m.msg); if (C.st) render(C.st, true); }
   else if (m.t === 'deny') { stopAll(); C.st = null; $('#me').innerHTML = ''; screen('bad', 'Kein Zugang', m.msg || 'Dieser Link ist ungültig.'); setConn('bad', 'Getrennt'); }
   else if (m.t === 'kicked') { stopAll(); screen('kicked'); setConn('bad', 'Auf anderem Gerät geöffnet'); }
   else if (m.t === 'bye') { C.bye = Date.now(); setConn('wait', 'Der Spielleiter hat die Abstimmung beendet'); }
 }
+function pcard(st) {
+  if (!st || st.imgOk === false) return '';
+  const has = !!pimg(st.me);
+  return `<div class="pcard">${avatar(st.me)}<div style="flex:1;min-width:0"><b>Dein Profilbild</b><small>${has ? 'Wird im Stream angezeigt.' : 'Lade ein Bild hoch – es ersetzt deine Initialen im Stream.'}</small></div><button class="pbtn" data-img="pick">📷 ${has ? 'Ändern' : 'Hochladen'}</button>${has ? '<button class="pbtn" data-img="del" title="Bild entfernen">✕</button>' : ''}</div>`;
+}
+async function squareImg(file, size) {
+  const url = await new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(file); });
+  const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = url; });
+  const m = Math.min(img.width, img.height), cv = document.createElement('canvas'); cv.width = cv.height = size;
+  cv.getContext('2d').drawImage(img, (img.width - m) / 2, (img.height - m) / 2, m, m, 0, 0, size, size);
+  return cv.toDataURL('image/jpeg', .82);
+}
+$('#imgIn').addEventListener('change', async e => {
+  const f = e.target.files[0]; if (!f) return;
+  if (!C.conn || !C.connected) { toast('⚠ Gerade keine Verbindung – kurz warten …'); return; }
+  try { const d = await squareImg(f, 192); C.conn.send({t:'img', d}); toast('📷 Profilbild gesendet'); }
+  catch (err) { toast('⚠ Bild konnte nicht gelesen werden'); }
+});
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-img]'), me = e.target.closest('#me');
+  if (!b && !me) return;
+  if (!C.st || C.st.imgOk === false) return;
+  if (b && b.dataset.img === 'del') { if (C.conn && C.connected) { C.conn.send({t:'img', d:''}); toast('Profilbild entfernt'); } return; }
+  $('#imgIn').value = ''; $('#imgIn').click();
+});
 function theme(c) {
   if (!c) return;
   const s = document.documentElement.style;
@@ -184,35 +236,64 @@ function render(st, force) {
   $('#show').textContent = st.show + (st.round ? ' · Runde ' + st.round : '');
   $('#me').style.setProperty('--c', col(st.me.color));
   $('#me').innerHTML = `${avatar(st.me)}<span>${esc(st.me.name)}</span>`;
-  if (st.phase === 'open' && (!prev || prev.phase !== 'open') && !st.out) { try { if (navigator.vibrate && (!navigator.userActivation || navigator.userActivation.hasBeenActive)) navigator.vibrate([120, 60, 120]); } catch (e) {} }
+  if (((st.phase === 'open' && (!prev || prev.phase !== 'open')) || (st.myTurn && !(prev && prev.myTurn))) && !st.out) { try { if (navigator.vibrate && (!navigator.userActivation || navigator.userActivation.hasBeenActive)) navigator.vibrate([120, 60, 120]); } catch (e) {} }
   const m = $('#main');
   const prog = (st.total ? `<div class="prog"><div class="bar ${st.phase === 'closed' ? 'ok' : ''}"><i style="width:${Math.round(100 * st.done / st.total)}%"></i></div>${st.done} von ${st.total} haben abgestimmt</div>` : '');
   const myName = () => { const o = (st.opts || []).find(x => x.id === st.my); return o ? o.name : ''; };
 
-  if (st.out && st.phase !== 'result') {
+  if (st.phase !== 'play') { C.jpick = false; C.jsel = null; }
+  if (st.phase === 'play' && !st.out) {
+    const jReady = st.joker === 'ready' && !st.jokerBusy;
+    if (!st.myTurn || !jReady) { C.jpick = false; C.jsel = null; }
+    const jStat = st.joker === 'off' ? '' : `<div class="jstat">🃏 Joker: ${st.joker === 'used' ? 'schon benutzt' : 'noch verfügbar'}</div>`;
+    if (st.myTurn && st.jokerFrom) {
+      m.innerHTML = `<div class="center"><div class="icon">🃏</div><h1>Joker für dich!</h1><p class="sub" style="font-size:17px;color:var(--txt)"><b>${esc(st.jokerFrom)}</b> hat dir seine Frage gegeben – du musst sie jetzt beantworten!</p>${jStat}</div>`;
+    } else if (st.myTurn && C.jpick) {
+      const o = (st.opts || []).find(x => x.id === C.jsel);
+      m.innerHTML = `<div class="vote"><div class="head"><div class="kicker">🃏 Joker einsetzen</div><h1 style="margin-top:6px">An wen gibst du deine Frage ab?</h1></div><div class="grid ${(st.opts || []).length === 1 ? 'one' : ''}">` +
+        (st.opts || []).map(x => `<button class="opt ${C.jsel === x.id ? 'sel' : ''}" data-j="${esc(x.id)}" style="--c:${col(x.color)}">${avatar(x, '58px')}<span class="nm">${esc(x.name)}</span></button>`).join('') + `</div>` +
+        `<div class="center" style="animation:none">${o ? `<button class="jbtn" id="jgo">🃏 Frage an ${esc(o.name)} abgeben</button>` : '<p class="sub" style="margin-top:14px">Tippe auf einen Spieler.</p>'}<button class="btn ghost" id="jcancel">Abbrechen</button><p class="sub" style="font-size:13px">Du hast nur <b>einen</b> Joker pro Spiel. Danach bekommst du eine neue Frage.</p></div></div>`;
+    } else if (st.myTurn) {
+      m.innerHTML = `<div class="center"><div class="icon float">🎯</div><h1>Du bist dran!</h1><p class="sub">Hör dir die Frage an und antworte.</p>${jReady ? '<button class="jbtn" id="jopen">🃏 Joker einsetzen</button>' : ''}${jStat}</div>`;
+    } else {
+      m.innerHTML = `<div class="center"><div class="icon">⏱</div><div class="kicker">Runde ${st.round || 1} läuft</div>${st.turn ? `<div class="turn" style="--c:${col(st.turn.color)}">${avatar(st.turn)}${esc(st.turn.name)} ist dran</div>` : ''}<p class="sub" style="margin-top:14px">Wenn du dran bist, kannst du hier deinen Joker einsetzen.</p>${jStat}${pcard(st)}</div>`;
+    }
+  } else if (st.out && st.phase !== 'result') {
     m.innerHTML = `<div class="center"><div class="icon">💀</div><h1>Du bist ausgeschieden</h1><p class="sub">Du kannst nicht mehr abstimmen – schau einfach weiter zu. Danke fürs Mitspielen!</p></div>`;
   } else if (st.phase === 'open' || st.phase === 'closed') {
     const closed = st.phase === 'closed', opts = st.opts || [];
     let h = `<div class="vote"><div class="head"><div class="kicker">${closed ? '🔒 Abstimmung geschlossen' : 'Runde ' + (st.round || 1) + ' · Abstimmung'}</div><h1 style="margin-top:6px">${esc(st.title)}</h1></div>`;
     h += `<div class="grid ${opts.length === 1 ? 'one' : ''} ${closed ? 'locked' : ''}">` + opts.map(o => {
       const sel = (C.pending || st.my) === o.id;
-      return `<button class="opt ${sel ? 'sel' : ''} ${C.pending === o.id ? 'pend' : ''}" data-v="${esc(o.id)}" style="--c:${col(o.color)}" ${closed ? 'disabled' : ''}>${avatar(o, '58px')}<span class="nm">${esc(o.name)}</span></button>`;
+      return `<button class="opt ${sel ? 'sel' : ''} ${C.pending === o.id ? 'pend' : ''}" data-v="${esc(o.id)}" style="--c:${col(o.color)}" ${closed ? 'disabled' : ''}>${avatar(o, '58px')}<span class="nm">${esc(o.name)}</span>${o.qs ? `<span class="st">✔ ${o.r} &nbsp;✘ ${o.w}</span>` : ''}</button>`;
     }).join('') + '</div>';
     if (closed) h += `<div class="info">${st.my ? `Deine Stimme: <b>${esc(myName())}</b>` : 'Du hast nicht abgestimmt.'}<br><span style="opacity:.75">Jetzt wird im Stream aufgelöst …</span></div>`;
     else if (st.my) h += `<div class="info">Deine Stimme: <b>${esc(myName())}</b>${st.mySrc === 'manual' ? ' (vom Spielleiter eingetragen)' : ''}<br><span style="opacity:.75">Du kannst sie noch ändern, bis der Spielleiter die Abstimmung schließt.</span></div>`;
     else h += `<div class="info">Tippe auf den Spieler, der deiner Meinung nach der Dümmste war.<br><span style="opacity:.75">Für dich selbst kannst du nicht stimmen.</span></div>`;
-    m.innerHTML = h + prog + '</div>';
+    if (opts.some(o => o.qs && o.qs.length)) {
+      h += prog + `<details class="recap" ${C.recapOpen ? 'open' : ''}><summary>📋 Wer hatte welche Frage?</summary>` + opts.map(o => `<div class="rg"><div class="rh">${avatar(o)}${esc(o.name)}</div>${(o.qs || []).map(e => `<div class="rl"><b class="${e.k}">${e.k === 'right' ? '✔' : e.k === 'wrong' ? '✘' : '⏭'}</b><span>${esc(e.q)}<small>Antwort: ${esc(e.a)}</small></span></div>`).join('') || '<div class="rl"><b></b><span style="opacity:.6">keine Frage</span></div>'}</div>`).join('') + '</details>';
+      m.innerHTML = h + '</div>';
+      m.querySelector('details').addEventListener('toggle', e => { C.recapOpen = e.target.open; });
+    } else m.innerHTML = h + prog + '</div>';
   } else if (st.phase === 'result' && st.loser) {
     const l = st.loser;
     m.innerHTML = `<div class="center loser" style="--c:${col(l.color)}"><div class="kicker">Runde ${st.round} · Ergebnis</div>${avatar(l)}<div class="big">${l.me ? 'Du' : esc(l.name)}</div><p class="sub" style="font-size:19px;font-weight:800;color:var(--txt)">${l.out ? (l.me ? 'fliegst raus! 💀' : 'fliegt raus! 💀') : (l.me ? 'verlierst ein Leben 💔' : 'verliert ein Leben 💔')}</p><p class="sub">Warte auf die nächste Runde …</p></div>`;
   } else {
-    m.innerHTML = `<div class="center"><div class="icon float">⏳</div><h1>Warte auf Abstimmung …</h1><p class="sub">Sobald der Spielleiter die Abstimmung freigibt, kannst du hier wählen. Lass diese Seite einfach offen.</p><div class="dots"><span></span><span></span><span></span></div></div>`;
+    m.innerHTML = `<div class="center"><div class="icon float">⏳</div><h1>Warte auf Abstimmung …</h1><p class="sub">Sobald der Spielleiter die Abstimmung freigibt, kannst du hier wählen. Lass diese Seite einfach offen.</p><div class="dots"><span></span><span></span><span></span></div>${pcard(st)}</div>`;
   }
 }
 
 /* ---------- Eingaben ---------- */
 $('#main').addEventListener('click', e => {
   if (e.target.closest('#again')) { C.stop = false; screen('connect'); connect(); return; }
+  if (e.target.closest('#jopen')) { C.jpick = true; C.jsel = null; render(C.st, true); return; }
+  if (e.target.closest('#jcancel')) { C.jpick = false; C.jsel = null; render(C.st, true); return; }
+  const jb = e.target.closest('[data-j]'); if (jb) { C.jsel = jb.dataset.j; render(C.st, true); return; }
+  if (e.target.closest('#jgo')) {
+    if (!C.conn || !C.connected) { toast('⚠ Gerade keine Verbindung – kurz warten …'); return; }
+    try { C.conn.send({t:'joker', v:C.jsel}); toast('🃏 Joker gesendet'); } catch (err) { toast('⚠ Joker konnte nicht gesendet werden'); }
+    C.jpick = false; C.jsel = null; return;
+  }
   const b = e.target.closest('[data-v]'); if (!b || b.disabled) return;
   const st = C.st; if (!st || st.phase !== 'open' || st.out) return;
   const v = b.dataset.v;
